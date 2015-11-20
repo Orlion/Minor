@@ -85,7 +85,7 @@ class Route{
 
 		$moduleName = $controllerName = $actionName = '';
 
-		$urlPatternOriginal = '^/' . str_replace('/' , '\/' , APP_ROOT) . '/(\w+)/(\w+)/(\w+)';
+		$urlPatternOriginal = '/^' . str_replace('/' , '\/' , APP_ROOT) . '\/(\w+)\/(\w+)\/(\w+)';
 
 		$getMCA = function($urlPattern) use ($url) {
 
@@ -102,7 +102,7 @@ class Route{
 
 			foreach ($appPostfixs as $appPostfix) {
 				
-				$urlPattern = $urlPatternOriginal . '.' . $appPostfix . '/$';
+				$urlPattern = $urlPatternOriginal . '.' . $appPostfix . '$/';
 				
 				if ($MCA = $getMCA($urlPattern)) {
 
