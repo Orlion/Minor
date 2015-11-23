@@ -8,6 +8,8 @@ return [
 							],
 		'controller'	=>	'Test\test',
 		'action'		=>	'index',
+		'filter'		=>	['Test\test1' , 'Test\test2'],
 	],
 ];
+
 ?>
