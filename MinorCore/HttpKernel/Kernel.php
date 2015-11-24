@@ -8,12 +8,9 @@
 namespace MinorCore\HttpKernel;
 
 use MinorCore\Route\Route;
-use MinorCore\Ioc\Container;
 use MinorCore\Ioc\ServiceFactory;
-use MinorCore\Ioc\ServiceException;
-use MinorCore\Controller\ControllerException;
 use MinorCore\Controller\ControllerFactory;
-use ReflectionClass;
+use MinorCore\Filter\FilterChain;
 
 class Kernel{
 
@@ -64,13 +61,15 @@ class Kernel{
 
 		$url = $this->request->getUrl();
 
-		list($moduleName , $controllerName , $actionName , $params , $filter) = Route::MCAPF($url);
+		$baseUrl = $this->request->getBaseUrl();
+
+		list($moduleName , $controllerName , $actionName , $params , $filter) = Route::MCAPF($url , $baseUrl);
 
 		$chain = new FilterChain($filter);
 
-		list($this->request , $this->response) = $chain->doFilter($this->request , $this->response);
+		$chain->doFilter($this->request , $this->response);
 
-		$controller = ControllerFactory::bulidController($moduleName , $controllerName);
+		$controller = ControllerFactory::bulidController($moduleName , $controllerName , $actionName , $params , $this->request , $this->response , $this->container);
 
 		if (!method_exists($controller , $actionName))
 			throw new ControllerException('控制器:' . $moduleControllerName . '未定义' . $actionName . '方法');

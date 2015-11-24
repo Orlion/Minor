@@ -14,7 +14,9 @@ class UrlAnalysis{
 	 * @param  string $url
 	 * @return array  [$moduleName , $controllerName , $actionName , $params , $filter]
 	 */
-	public static function getMCAPF($url){
+	public static function getMCAPF($url , $baseUrl){
+
+		$url = str_replace($baseUrl , '' , $url);
 
 		$moduleName = $controllerName = $actionName = ''; $params = $filter = [];
 
@@ -26,7 +28,7 @@ class UrlAnalysis{
 			
 			if (preg_match($urlPattern , $url , $matches)) {
 
-				list($moduleName , $controllerName , $actionName , $param , $filter) = self::get();
+				list($moduleName , $controllerName , $actionName , $params , $filter) = self::getMCAPFConfig($urlParams , $urlPatternOriginal , $matches);
 				break;
 			}
 		}
@@ -39,7 +41,8 @@ class UrlAnalysis{
 				throw new RouteException("404");
 		}
 
-		return [$moduleName , $controllerName , $actionName , $params];
+		return [$moduleName , $controllerName , $actionName , $params , $filter];
+	
 	}
 
 	/**
@@ -49,12 +52,12 @@ class UrlAnalysis{
 	 * @param  string $urlPatternOriginal
 	 * @return array  [$moduleName , $controllerName , $action , $matches , $filter]
 	 */
-	private static function getMCAPFConfig($urlParams , $urlPatternOriginal){
+	private static function getMCAPFConfig($urlParams , $urlPatternOriginal , $matches){
 
 		if (empty($urlParams['controller'])) 
 			throw new RouteException('路由:' . $urlPatternOriginal . '缺少Controller参数');
 
-		$MC = explode('\\', $urlParams['controller']);
+		$MC = explode('/', $urlParams['controller']);
 
 		if (empty($MC[0]) || empty($MC[1]))
 			throw new RouteException('路由:' . $urlPatternOriginal . 'Controller参数配置错误');
@@ -69,55 +72,7 @@ class UrlAnalysis{
 
 		array_shift($matches);
 
-		return [$moduleName , $controllerName , $action , $matches , $filter];
-	}
-
-	/**
-	 * url没有匹配到路由则根据/moudle/controller/action?k=v解析出module\controller\action
-	 */
-	private static function getMCADefault($url){
-
-		$moduleName = $controllerName = $actionName = '';
-
-		$urlPatternOriginal = '/^' . str_replace('\\' , '\\\\' , APP_ROOT) . '\/(\w+)\/(\w+)\/(\w+)';
-
-		$getMCA = function($urlPattern) use ($url) {
-
-			if (preg_match($urlPattern , $url , $matches)) {
-
-				array_shift($matches);
-				return $matches;
-			}
-
-			return FALSE;
-		};
-
-		if (is_array($appPostfixs = ConfigTools::app('URL_POSTFIX'))) {
-
-			foreach ($appPostfixs as $appPostfix) {
-				
-				$urlPattern = $urlPatternOriginal . '.' . $appPostfix . '$/';
-				
-				if ($MCA = $getMCA($urlPattern)) {
-
-					list($moduleName , $controllerName , $actionName) = $MCA;
-
-					break;
-				} 
-			}
-		} else {
-
-			$urlPattern = $urlPatternOriginal . '/$';
-
-			if ($MCA = $getMCA($urlPattern)) {
-
-				list($moduleName , $controllerName , $actionName) = $MCA;
-
-				break;
-			}
-		}
-
-		return [$moduleName , $controllerName , $actionName , [] , []];
+		return [$moduleName , $controllerName , $actionName , $matches , $filter];
 	}
 
 	/**
@@ -139,10 +94,60 @@ class UrlAnalysis{
 				$replacePattern = '(' . $paramPattern . ')';
 
 				$urlPatternOriginal = str_replace($matches[0][$i] , $replacePattern , $urlPatternOriginal);
+			
 			}
 		}
 
-		return ['/^' . str_replace('\\' , '\\\\' , APP_ROOT) . $urlPatternOriginal . '$/' , !empty($matches[1]) ? $matches[1] : []];
+		return ['/^' . $urlPatternOriginal . '$/' , !empty($matches[1]) ? $matches[1] : []];
+	}
+
+	/**
+	 * url没有匹配到路由则根据/moudle/controller/action?k=v解析出module\controller\action
+	 */
+	private static function getMCADefault($url){
+
+		$moduleName = $controllerName = $actionName = '';
+
+		$urlPatternOriginal = '/^' . '\/(\w+)\/(\w+)\/(\w+)';
+
+		if (is_array($appPostfixs = ConfigTools::app('URL_POSTFIX'))) {
+
+			foreach ($appPostfixs as $appPostfix) {
+				
+				$urlPattern = $urlPatternOriginal . '.' . $appPostfix . '$/';
+				
+				if ($MCA = self::matchMCA($urlPattern , $url)) {
+
+					list($moduleName , $controllerName , $actionName) = $MCA;
+
+					break;
+				} 
+			}
+
+		} else {
+
+			$urlPattern = $urlPatternOriginal . '/$';
+
+			if ($MCA = $getMCA($urlPattern)) {
+
+				list($moduleName , $controllerName , $actionName) = $MCA;
+
+				break;
+			}
+		}
+
+		return [$moduleName , $controllerName , $actionName , [] , []];
+	}
+
+	private static function matchMCA($urlPattern , $url){
+
+		if (preg_match($urlPattern , $url , $matches)) {
+
+			array_shift($matches);
+			return $matches;
+		}
+
+		return FALSE;
 	}
 
 	private static function getRoutes(){

@@ -4,26 +4,26 @@ namespace MinorCore\Event;
 
 use ArrayAccess;
 
-class Event implements ArrayAccess(){
+class Event implements ArrayAccess{
 
-	protected $elements;
+	public $elements;
 
-	protected function offsetExists($offset){
+	public function offsetExists($offset){
 
 		return isset($this->$elements[$offset]);
 	}
 
-	protected function offsetGet ($offset){
+	public function offsetGet ($offset){
 
 		return $this->elements[$offset];
 	}
 
-	protected function offsetSet ($offset, $value){
+	public function offsetSet ($offset, $value){
 
 		$this->elements[$offset] = $value;
 	}
 
-	protected function offsetUnset ($offset){
+	public function offsetUnset ($offset){
 
 		unset($this->elements[$offser]);
 	}

@@ -4,7 +4,7 @@ namespace App\Listener;
 
 class testListener{
 
-	public function test(Event $event){
+	public function handle(\App\Event\testEvent $event){
 
 		echo $event['test'];
 	}

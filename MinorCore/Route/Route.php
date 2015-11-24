@@ -19,11 +19,11 @@ class Route{
 	 * @param  string $url
 	 * @return array  [$module,$controller,$action,$param,$filter]
 	 */
-	public static function MCAPF($url){
+	public static function MCAPF($url , $baseUrl){
 
 		$url = parse_url(rawurldecode($url) , PHP_URL_PATH);
 
-		return UrlAnalysis::getMCAPF($url);
+		return UrlAnalysis::getMCAPF($url , $baseUrl);
 	}
 
 	/**

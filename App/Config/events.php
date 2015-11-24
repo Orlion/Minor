@@ -2,8 +2,8 @@
 return $events = [
 
 	'App\Event\testEvent'	=>	[
-									['testListener' , 'handle'],
-								];
+									['App\Listener\testListener' , 'handle'],
+								],
 ];
 
 ?>

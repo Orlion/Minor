@@ -20,6 +20,8 @@ class Request{
 
 	private $browser;
 
+	private $baseUrl;
+
 	private function __construct(){
 
 	}
@@ -40,6 +42,12 @@ class Request{
 
 	public function getUrl(){
 		return $this->url;
+	}
+	/**
+	 * eg: /Minor/Public/
+	 */
+	public function getBaseUrl(){
+		return $this->baseUrl;
 	}
 
 	public function getMethod(){
@@ -76,6 +84,10 @@ class Request{
 
 	public function setUrl($url){
 		$this->url = $url;
+	}
+
+	public function setBaseUrl($baseUrl){
+		$this->baseUrl = $baseUrl;
 	}
 
 	public function setMethod($method){

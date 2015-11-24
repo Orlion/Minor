@@ -24,15 +24,8 @@ class ClassLoader{
 				require $filePathClass;
 			} else {
 
-				$fileMap = self::listRootDir(__DIR__ . '/../../');
-
-				if (isset($fileMap[$classFileName])) {
-
-					require $fileMap[$classFileName];
-				} else {
-					require 'ClassNotFoundException.php';
-					throw new ClassNotFoundException('类:' . $className . '未发现');
-				}
+				require_once 'ClassNotFoundException.php';
+				throw new ClassNotFoundException('类:' . $className . '未发现');
 			}
 		}
 	}

@@ -1,15 +1,21 @@
 <?php
 return [
 
-	'/test/{id}.html'	=>	[
-		'name'			=>	'test',
-		'required'		=>	[
-								'id'	=>	'\d+',
+	'/'					=>	[
+							'name'			=>	'index',
+							'controller'	=>	'index/index',
+							'action'		=>	'index',
 							],
-		'controller'	=>	'Test\test',
-		'action'		=>	'index',
-		'filter'		=>	['Test\test1' , 'Test\test2'],
-	],
+
+	'/test/{id}.html'	=>	[
+							'name'			=>	'test',
+							'required'		=>	[
+												'id'	=>	'\d+',
+												],
+							'controller'	=>	'Test/test',
+							'action'		=>	'index',
+							'filter'		=>	['App\Filter\test1Filter' , 'App\Filter\test2Filter'],
+							],
 ];
 
 ?>

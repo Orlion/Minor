@@ -3,7 +3,6 @@
 namespace App\Test;
 
 use MinorCore\Controller\Controller;
-use App\Lib\Mymailtool;
 use MinorCore\View\View;
 use MinorCore\Ioc\ServiceContainer;
 use MinorCore\HttpKernel\Request;
@@ -15,11 +14,16 @@ class testController extends Controller{
 		
 	}
 
-	public function index($username){
-		
-		$mymailt = new Mymailtool();
+	public function index($id){
 
-		return View::render('Test:index.tpl' , ['id' => 1]);
+		$my = new \Lib\Mymailtool();
+
+		$event = new \App\Event\testEvent();
+		$event['test'] = 'test';
+
+		\MinorCore\Event\EventNotify::fire($event);
+
+		return View::render('Test:test.index.tpl' , ['id' => $id]);
 	}
 }
 ?>

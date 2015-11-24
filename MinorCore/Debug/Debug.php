@@ -8,7 +8,6 @@ class Debug{
 
 	foreach ($debug as $key => $value) {
 		
-		
 	}
 }
 ?>

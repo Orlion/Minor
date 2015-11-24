@@ -1,10 +1,10 @@
 <?php
 
-namespace MinorCore\Filter;
+namespace MinorCore\Event;
 
 use Exception;
 
-class FilterException extends Exception{
+class EventException extends Exception{
 
     public function __construct($message, $code = 0, Exception $previous = null) {
 
@@ -17,4 +17,5 @@ class FilterException extends Exception{
         return __CLASS__ . ": [{$this->code}]: {$this->message}\n";
     }
 }
+
 ?>

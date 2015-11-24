@@ -7,7 +7,8 @@ class ConfigTools{
 	private static $configMap = [
 									'services'	=>	"{__DIR__}/../../App/Config/services.php",
 									'routes'	=>	"{__DIR__}/../../App/Config/routes.php",
-									'app'		=>	"{__DIR__}/../../App/Config/app.php",
+									'apps'		=>	"{__DIR__}/../../App/Config/app.php",
+									'events'	=>	"{__DIR__}/../../App/Config/events.php",
 								];
 
 	public static function getServices(){
@@ -26,22 +27,30 @@ class ConfigTools{
 		return require self::$configMap['routes'];
 	}
 	
-	public static function getApp(){
+	public static function getApps(){
 
-		if (!file_exists(self::$configMap['app']))
+		if (!file_exists(self::$configMap['apps']))
 			throw new ConfigException('routes配置文件不存在');
 
-		return require self::$configMap['app'];
+		return require self::$configMap['apps'];
 	}
 
 	public static function app($ConfigKey){
 
-		$appConfig = self::getApp();
+		$appConfig = self::getApps();
 
 		if (!isset($appConfig[(string)$ConfigKey]))
 			throw new ConfigException('app配置不存在"' . $ConfigKey . '"项');
 
 		return $appConfig[(string)$ConfigKey];
+	}
+
+	public static function getEvents(){
+
+		if (!file_exists(self::$configMap['events']))
+			throw new ConfigException('events配置文件不存在');
+
+		return require self::$configMap['events'];
 	}
 }
 ?>
