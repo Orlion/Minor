@@ -91,5 +91,15 @@ class Kernel{
 
 		exit(($response instanceof Response) ? $response->outContent() : '');
 	}
+
+	/**
+	 * 校准时间
+	 */
+	private function setTimeZone(){
+
+		// $TIME_ZONE = ConfigTools::app('APP_TIMEZONE');
+		// date_default_timezone_set('PRC');
+	}
+	
 }
 ?>

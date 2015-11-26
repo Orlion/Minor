@@ -8,6 +8,7 @@ class ResponseFactory{
 
 		$response = Response::getResponse();
 		$response->setMinorSession(self::getSession());
+		$response->setCharset(self::getCharset());
 
 		return $response;
 	}
@@ -15,6 +16,11 @@ class ResponseFactory{
 	public static function getSession(){
 
 		return MinorSession::getMinorSession();
+	}
+
+	public static function getCharset(){
+
+		return \MinorCore\Config\ConfigTools::app('APP_CHARSET');
 	}
 }
 ?>

@@ -10,6 +10,8 @@ class Response{
 
 	private $content = '';
 
+	private $charset = '';
+
 	private function __construct(){
 
 	}
@@ -38,9 +40,20 @@ class Response{
 		return $this->minorsession;
 	}
 
+	public function getCharset(){
+
+		return $this->charset;
+	}
+
 	public function setHeader($header){
 
 		header((string)$header);
+	}
+
+	public function setCharset($charset){
+
+		$this->charset = (string)$charset;
+		header('content-type:text/html;charset=' . $this->charset);
 	}
 
 	public function setContent($content){

@@ -1,18 +1,21 @@
 <?php
 
-namespace MinorCore\File\FileException;
+namespace MinorCore\File;
+
+use Exception;
 
 class FileException extends Exception{
 
-	private $errmsg = '文件操作异常';
+    public function __construct($message, $code = 0, Exception $previous = null) {
 
-	public function __construct($errmsg){
+        // 确保所有变量都被正确赋值
+        parent::__construct($message, $code, $previous);
+    }
 
-		$this->errmsg = $errmsg;
-	}
-	public function getMessage(){
-
-		return $this->errmsg;
-	}
+    // 自定义字符串输出的样式
+    public function __toString() {
+        return __CLASS__ . ": [{$this->code}]: {$this->message}\n";
+    }
 }
+
 ?>

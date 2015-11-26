@@ -6,8 +6,6 @@ class ClassLoader{
 
 	public static  function loader($className){
 
-		echo 'call ' . $className . '<br>';
-
 		$classMap = require 'classMap.php';
 
 		if (isset($classMap[$className])) {
