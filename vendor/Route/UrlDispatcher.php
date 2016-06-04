@@ -1,0 +1,90 @@
+<?php
+
+namespace Minor\Route;
+
+use Minor\Config\ConfigException;
+
+class UrlDispatcher
+{
+    public static function getControllerActionParams($url, Array $routes)
+    {
+        $controllerActionParams = ['', '', []];
+
+        if (empty($routes[$url])) {
+            foreach ($routes as $routePatternOriginal => $routeParams) {
+                if (empty($routeParams['required'])) {
+                    $required = [];
+                } else if (!is_array($routeParams['required'])) {
+                    throw new ConfigException('路由:[' . $routePatternOriginal . ']配置项[required]必须为数组');
+                } else {
+                    $required = $routeParams['required'];
+                }
+
+                $routePattern = self::generateRoutePattern($routePatternOriginal, $required);
+                if (preg_match($routePattern, $url, $matches)) {
+                    $controllerActionParams = self::getRouteConfig($routeParams, $routePatternOriginal, $matches);
+                    break;
+                }
+            }
+        } else {
+            $controllerActionParams = self::getRouteConfig($routes[$url], $url, []);
+        }
+
+        if (empty($controllerActionParams[0])) {
+            $controllerActionParams = self::getDefaultControllerAction($url);
+        }
+
+        return $controllerActionParams;
+    }
+
+    private static function generateRoutePattern($routePatternOriginal,Array $routeRequired)
+    {
+        $routePatternOriginal = str_replace('\{' , '{', trim($routePatternOriginal));
+        $routePatternOriginal = str_replace('\}' , '}', $routePatternOriginal);
+
+        if (preg_match_all('/{(\w+)}/', $routePatternOriginal, $matches)) {
+            $paramsNum = count($matches[1]);
+            for ($i = 0; $i < $paramsNum; $i++) {
+                $paramPattern  = !empty($routeRequired[$matches[1][$i]]) ? $routeRequired[$matches[1][$i]] : '.+';
+                $replacePattern = '(' . $paramPattern . ')';
+                $routePatternOriginal = str_replace($matches[0][$i] , $replacePattern , $routePatternOriginal);
+            }
+        }
+
+        return '#^' . $routePatternOriginal . '$#';
+    }
+
+    private static function getRouteConfig(Array $routeParams, $routePatternOriginal, Array $matches)
+    {
+        if (empty($routeParams['controller']))
+            throw new ConfigException('路由:[' . $routePatternOriginal . ']缺少Controller参数');
+
+        if (empty($routeParams['action']))
+            throw new ConfigException('路由:[' . $routePatternOriginal . ']缺少action参数');
+
+        array_shift($matches);
+
+        return [$routeParams['controller'], $routeParams['action'], $matches];
+    }
+
+    private static function getDefaultControllerAction($url)
+    {
+        $controllerActionParams = ['', '', []];
+
+        $routePattern = '#^' . '/(\w+)/(\w+)/(\w+)#';
+        if ($controllerActionArr = self::match($routePattern, $url)) {
+            $controllerActionParams = [$controllerActionArr[0], $controllerActionArr[1], []];
+        }
+
+        return $controllerActionParams;
+    }
+
+    private static function match($routePattern , $url)
+    {
+        if (preg_match($routePattern , $url , $matches)) {
+            return ['App\Modules\\' . ucfirst($matches[1]) . '\Controller\\' . ucfirst($matches[2]) . 'Controller', $matches[3]];
+        }
+
+        return FALSE;
+    }
+}

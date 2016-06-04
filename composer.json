@@ -1,0 +1,33 @@
+{
+  "name": "orlion/minor2",
+  "type": "project",
+  "keywords": ["framework","MVC", "Minor"],
+  "description": "Framework for PHP 5.5+",
+  "homepage": "https://github.com/Orlion/Minor2",
+  "time": "2016-05-27",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Orlion",
+      "email": "orlionml@gmail.com",
+      "homepage": "http://orlion.github.io",
+      "role": "Developer"
+    }
+  ],
+  "require": {
+    "php": ">=5.4.0"
+  },
+  "version": "v2.0.0-alpha",
+  "autoload": {
+    "psr-4": {
+      "Minor\\" : "vendor/",
+      "App\\" : "app/"
+    }
+  },
+  "repositories": {
+    "packagist": {
+      "type": "composer",
+      "url": "https://packagist.phpcomposer.com"
+    }
+  }
+}
