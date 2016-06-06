@@ -1,9 +1,13 @@
 # Minor
 > It just did what a framework should do.
+> 
+> 它只做一个框架应该做的。
 
 ***
 ### What is Minor?
-Minor is a beautiful PHP Web Framework. It just did what a framework should do, so it's stunningly fast.
+Minor is a simple PHP Web Framework. It just did what a framework should do, so it's stunningly fast.
+
+Minor是一个很简单的PHP web框架。它只做一个框架应该做的，所以它相当的快。
 
 ![Minor](http://i4.buimg.com/678554b000f6be7f.png)
 
