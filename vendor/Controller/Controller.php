@@ -6,11 +6,6 @@ use Minor\Framework\Context;
 
 class Controller
 {
-    public function __construct()
-    {
-
-    }
-
     public function redirect($url)
     {
         ob_end_clean();

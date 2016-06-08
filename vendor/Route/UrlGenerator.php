@@ -4,14 +4,35 @@ namespace Minor\Route;
 
 class UrlGenerator
 {
-    public static function generateUrl($urlOriginal, Array $routes)
+
+    private static $_instance = null;
+
+    private $routes = [];
+
+    private function __construct(Array $routes)
     {
-        $urlOriginalArray = parse_url(trim($urlOriginal));
+        $this->routes = $routes;
+    }
+
+    private function __clone(){}
+
+    public static function getInstance(Array $routes)
+    {
+        if (is_null(self::$_instance) || !self::$_instance instanceof self) {
+            self::$_instance = new self($routes);
+        }
+
+        return self::$_instance;
+    }
+
+    public function generateUrl($path)
+    {
+        $urlOriginalArray = parse_url(trim($path));
         $mca = explode('/', !empty($urlOriginalArray['path']) ? $urlOriginalArray['path'] : '');
 
         if (4 === count($mca)) {
             $controller = 'App\Modules\\' . $mca[1] . '\Controller\\' . $mca[2] . 'Controller';
-            if ($route = self::getRouteByControllerAction($controller, $mca[3], $routes)) {
+            if ($route = $this->getRouteByControllerAction($controller, $mca[3], $this->routes)) {
                 list($routeRule, $routeConfig) = $route;
                 $replace = function($paramVal, $paramKey) use (&$routeRule, $routeConfig){
                     if (strstr($routeRule , '{' . $paramKey . '}')) {
@@ -23,20 +44,20 @@ class UrlGenerator
                 parse_str($urlOriginalArray['query'] , $queryArr);
                 array_walk($queryArr , $replace);
 
-                return  preg_match('#{(\w+)}#', $routeRule) ? $urlOriginal : $routeRule . (!empty($urlOriginalArray['fragment']) ? '#' . $urlOriginalArray['fragment'] : '');
+                return  preg_match('#{(\w+)}#', $routeRule) ? $path : $routeRule . (!empty($urlOriginalArray['fragment']) ? '#' . $urlOriginalArray['fragment'] : '');
             }
         }
 
-        return $urlOriginal;
+        return $path;
     }
 
-    private static function getRouteByControllerAction($controller, $action, Array $routes)
+    private function getRouteByControllerAction($controller, $action)
     {
-        foreach ($routes as $routeRule => $routeParams) {
+        foreach ($this->routes as $routeRule => $routeParams) {
             if (empty($routeParams['controller']) || empty($routeParams['action']))
                 throw new ConfigException('路由:[' . $routeRule . ']配置缺少参数');
             if (strtolower($routeParams['controller']) === strtolower($controller) && $routeParams['action'] === $action) {
-                return [$routeRule, $routes[$routeRule]];
+                return [$routeRule, $this->routes[$routeRule]];
             }
         }
 

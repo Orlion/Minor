@@ -2,34 +2,37 @@
 
 namespace Minor\Route;
 
-use Minor\Framework\Context;
-
 class Router
 {
-    private static $urlDispatcher = null;
+    private static $_instance = null;
 
-    private static $urlGenerator = null;
+    private $routesConfig = [];
 
-    public static function getControllerActionParams($url)
+    private function __construct(Array $routesConfig)
     {
-        $baseUrl = UrlTools::getBaseUrl($url);
-        $url = parse_url(rawurldecode($url) , PHP_URL_PATH);
-
-        return UrlDispatcher::getControllerActionParams(str_replace($baseUrl , '' , $url), Context::getConfig()->getRoutes());
+        $this->routesConfig = $routesConfig;
     }
 
-    public static function genUrl($urlOriginal)
+    private function __clone(){}
+
+    public static function getInstance(Array $routesConfig)
     {
-        return UrlGenerator::generateUrl($urlOriginal, Context::getConfig()->getRoutes());
+        if (is_null(self::$_instance) || !self::$_instance instanceof self) {
+            self::$_instance = new self($routesConfig);
+        }
+
+        return self::$_instance;
+    }
+    public function dispatcher($url)
+    {
+        $urlDispatcher = UrlDispatcher::getInstance($this->routesConfig);
+
+        return $urlDispatcher->getControllerActionParams($url);
     }
 
-    public static function setUrlDispatcher(UrlDispatcher $urlDispatcher)
+    public function to($path)
     {
-        self::$urlDispatcher = $urlDispatcher;
-    }
-
-    public static function setUrlGenerator(UrlGenerator $urlGenerator)
-    {
-        self::$urlGenerator = $urlGenerator;
+        $urlGenerator = UrlGenerator::getInstance($this->routesConfig);
+        return $urlGenerator->generateUrl($path);
     }
 }

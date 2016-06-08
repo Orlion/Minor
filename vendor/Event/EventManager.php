@@ -3,11 +3,15 @@
 namespace Minor\Event;
 
 use Minor\Config\ConfigException;
-use Minor\Framework\Context;
 
-class EventNotify
+class EventManager
 {
     private static $events = [];
+
+    public static function init(Array $events)
+    {
+        self::$events = $events;
+    }
 
     public static function fire(Event $event)
     {
@@ -36,10 +40,5 @@ class EventNotify
         }
 
         return null;
-    }
-
-    private static function getEvents(){
-
-        return count(self::$events) ? self::$events : Context::getConfig()->getEvents();
     }
 }

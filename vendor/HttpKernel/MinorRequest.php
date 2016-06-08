@@ -1,9 +1,8 @@
 <?php
-
+/**
+ * MinorRequest
+ */
 namespace Minor\HttpKernel;
-
-use Minor\Config\ConfigException;
-use Minor\Framework\Context;
 
 class MinorRequest
 {
@@ -11,13 +10,19 @@ class MinorRequest
 
     private $url;
 
+    private $requestUrl;
+
+    private $baseUrl;
+
     private $method;
 
-    private $params;
+    private $getParams;
 
-    private $minorCookie;
+    private $postParams;
 
-    private $minorSession;
+    private $minorCookie = null;
+
+    private $minorSession = null;
 
     private $ip;
 
@@ -25,14 +30,30 @@ class MinorRequest
 
     private $browser;
 
-    private function __construct(){}
+    private $server = [];
+
+    private function __construct($url, $method = 'get', Array $getParams = [], Array $postParams = [], $requestUrl = null, $baseUrl = null, $ip = null, $os = null, $browser = null, Array $server = [], MinorCookie $minorCookie = null, MinorSession $minorSession = null)
+    {
+        $this->url = $url;
+        $this->method = $method;
+        $this->getParams = $getParams;
+        $this->postParams = $postParams;
+        $this->requestUrl = $requestUrl;
+        $this->baseUrl = $baseUrl;
+        $this->ip = $ip;
+        $this->os = $os;
+        $this->browser = $browser;
+        $this->minorCookie  = $minorCookie;
+        $this->minorSession = $minorSession;
+        $this->server = $server;
+    }
 
     private function __clone(){}
 
-    public static function getInstance()
+    public static function getInstance($url, $method = 'get', Array $getParams = [], Array $postParams = [], $requestUrl = null, $baseUrl = null, $ip = null, $os = null, $browser = null, Array $server = [], MinorCookie $minorCookie = null, MinorSession $minorSession = null)
     {
         if (is_null(self::$_instance) || !self::$_instance instanceof self) {
-            self::$_instance = new self();
+            self::$_instance = new self($url, $method, $getParams, $postParams, $requestUrl, $baseUrl, $ip, $os, $browser, $server, $minorCookie, $minorSession);
         }
 
         return self::$_instance;
@@ -51,6 +72,11 @@ class MinorRequest
     public function getParams()
     {
         return $this->params;
+    }
+
+    public function getServer()
+    {
+        return $this->server;
     }
 
     public function getParameter($key , $default = '')
@@ -91,155 +117,11 @@ class MinorRequest
 
     public function getIp()
     {
-        if (empty($this->ip)) {
-            if (array_key_exists('HTTP_X_FORWARDED_FOR',$_SERVER) && $_SERVER["HTTP_X_FORWARDED_FOR"]) {
-                $ip = $_SERVER["HTTP_X_FORWARDED_FOR"];
-            } elseif (array_key_exists('HTTP_CLIENT_IP',$_SERVER) && $_SERVER["HTTP_CLIENT_IP"]) {
-                $ip = $_SERVER["HTTP_CLIENT_IP"];
-            } elseif ($_SERVER["REMOTE_ADDR"]) {
-                $ip = $_SERVER["REMOTE_ADDR"];
-            } elseif (getenv("HTTP_X_FORWARDED_FOR")) {
-                $ip = getenv("HTTP_X_FORWARDED_FOR");
-            } elseif (getenv("HTTP_CLIENT_IP")) {
-                $ip = getenv("HTTP_CLIENT_IP");
-            } elseif (getenv("REMOTE_ADDR")) {
-                $ip = getenv("REMOTE_ADDR");
-            } else {
-                $ip = "Unknown";
-            }
-            if ( strpos($ip,',') && $iparr = explode(',',$ip) ) {
-                $ip = $iparr[0];
-            }
-
-            $this->ip = $ip;
-        }
-
         return $this->ip;
     }
 
     public function getOs()
     {
-        if (empty($this->os)) {
-            $agent = $_SERVER['HTTP_USER_AGENT'];
-            $os = false;
-
-            if (preg_match('/win/i', $agent) && strpos($agent, '95'))
-            {
-                $os = 'Windows 95';
-            }
-            else if (preg_match('/win 9x/i', $agent) && strpos($agent, '4.90'))
-            {
-                $os = 'Windows ME';
-            }
-            else if (preg_match('/win/i', $agent) && preg_match('/98/i', $agent))
-            {
-                $os = 'Windows 98';
-            }
-            else if (preg_match('/win/i', $agent) && preg_match('/nt 6.0/i', $agent))
-            {
-                $os = 'Windows Vista';
-            }
-            else if (preg_match('/win/i', $agent) && preg_match('/nt 6.1/i', $agent))
-            {
-                $os = 'Windows 7';
-            }
-            else if (preg_match('/win/i', $agent) && preg_match('/nt 6.2/i', $agent))
-            {
-                $os = 'Windows 8';
-            }else if(preg_match('/win/i', $agent) && preg_match('/nt 10.0/i', $agent))
-            {
-                $os = 'Windows 10';#添加win10判断
-            }else if (preg_match('/win/i', $agent) && preg_match('/nt 5.1/i', $agent))
-            {
-                $os = 'Windows XP';
-            }
-            else if (preg_match('/win/i', $agent) && preg_match('/nt 5/i', $agent))
-            {
-                $os = 'Windows 2000';
-            }
-            else if (preg_match('/win/i', $agent) && preg_match('/nt/i', $agent))
-            {
-                $os = 'Windows NT';
-            }
-            else if (preg_match('/win/i', $agent) && preg_match('/32/i', $agent))
-            {
-                $os = 'Windows 32';
-            }
-            else if (preg_match('/linux/i', $agent))
-            {
-                $os = 'Linux';
-            }
-            else if (preg_match('/unix/i', $agent))
-            {
-                $os = 'Unix';
-            }
-            else if (preg_match('/sun/i', $agent) && preg_match('/os/i', $agent))
-            {
-                $os = 'SunOS';
-            }
-            else if (preg_match('/ibm/i', $agent) && preg_match('/os/i', $agent))
-            {
-                $os = 'IBM OS/2';
-            }
-            else if (preg_match('/Mac/i', $agent) && preg_match('/PC/i', $agent))
-            {
-                $os = 'Macintosh';
-            }
-            else if (preg_match('/PowerPC/i', $agent))
-            {
-                $os = 'PowerPC';
-            }
-            else if (preg_match('/AIX/i', $agent))
-            {
-                $os = 'AIX';
-            }
-            else if (preg_match('/HPUX/i', $agent))
-            {
-                $os = 'HPUX';
-            }
-            else if (preg_match('/NetBSD/i', $agent))
-            {
-                $os = 'NetBSD';
-            }
-            else if (preg_match('/BSD/i', $agent))
-            {
-                $os = 'BSD';
-            }
-            else if (preg_match('/OSF1/i', $agent))
-            {
-                $os = 'OSF1';
-            }
-            else if (preg_match('/IRIX/i', $agent))
-            {
-                $os = 'IRIX';
-            }
-            else if (preg_match('/FreeBSD/i', $agent))
-            {
-                $os = 'FreeBSD';
-            }
-            else if (preg_match('/teleport/i', $agent))
-            {
-                $os = 'teleport';
-            }
-            else if (preg_match('/flashget/i', $agent))
-            {
-                $os = 'flashget';
-            }
-            else if (preg_match('/webzip/i', $agent))
-            {
-                $os = 'webzip';
-            }
-            else if (preg_match('/offline/i', $agent))
-            {
-                $os = 'offline';
-            }
-            else
-            {
-                $os = '未知操作系统';
-            }
-            $this->os = $os;
-        }
-
         return $this->os;
     }
 

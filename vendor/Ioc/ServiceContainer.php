@@ -2,6 +2,7 @@
 
 namespace Minor\Ioc;
 
+use Minor\Config\Config;
 use Minor\Config\ConfigException;
 use Minor\Framework\Context;
 
@@ -13,7 +14,7 @@ class ServiceContainer
 
     private function __construct()
     {
-        $this->serviceProviders = Context::getConfig()->getProviders();
+        $this->serviceProviders = Config::getFromProviders('all');
     }
 
     private function __clone(){}

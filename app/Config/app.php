@@ -1,14 +1,12 @@
 <?php
-/**
- * Application Config
- */
+
 return [
     // 应用名
     'APP_NAME'		=>	'Minor',
     // 编码
-    'APP_CHARSET'	=>	'UTF-8',
+    'CHARSET'	=>	'UTF-8',
     // 时区
-    'APP_TIMEZONE'	=>	'PRC',
+    'TIMEZONE'	=>	'PRC',
 
     // 是否自动开启session
     'SESSION_START' => TRUE,

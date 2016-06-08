@@ -12,9 +12,10 @@ class ControllerBuilder
         try {
             $controllerClass = new ReflectionClass($controllerName);
 
-            // 判断是否继承自Minor\Controller\Controller
-            if ('Minor\Controller\Controller' != $controllerClass->getParentClass()->name)
-                throw new ControllerException('自定义控制器[' . $controllerName . ']:必须继承自Minor\Controller\Controller');
+            if (($constructor = $controllerClass->getConstructor())) {
+                if ($constructor->getNumberOfRequiredParameters > 0)
+                    throw new ControllerException('自定义控制器[' . $controllerName . ']:构造函数存在必须输入参数');
+            }
 
             return [$controllerClass->newInstance(), self::getReflectionMethod($controllerClass, $controllerName, $actionName)];
         } catch (ReflectionException $re) {

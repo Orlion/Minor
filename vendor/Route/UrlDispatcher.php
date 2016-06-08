@@ -6,12 +6,32 @@ use Minor\Config\ConfigException;
 
 class UrlDispatcher
 {
-    public static function getControllerActionParams($url, Array $routes)
+    private static $_instance = null;
+
+    private $routes = [];
+
+    private function __construct(Array $routes)
+    {
+        $this->routes = $routes;
+    }
+
+    private function __clone(){}
+
+    public static function getInstance(Array $routes)
+    {
+        if (is_null(self::$_instance) || !self::$_instance instanceof self) {
+            self::$_instance = new self($routes);
+        }
+
+        return self::$_instance;
+    }
+
+    public function getControllerActionParams($url)
     {
         $controllerActionParams = ['', '', []];
 
-        if (empty($routes[$url])) {
-            foreach ($routes as $routePatternOriginal => $routeParams) {
+        if (empty($this->routes[$url])) {
+            foreach ($this->routes as $routePatternOriginal => $routeParams) {
                 if (empty($routeParams['required'])) {
                     $required = [];
                 } else if (!is_array($routeParams['required'])) {
@@ -20,24 +40,24 @@ class UrlDispatcher
                     $required = $routeParams['required'];
                 }
 
-                $routePattern = self::generateRoutePattern($routePatternOriginal, $required);
+                $routePattern = $this->generateRoutePattern($routePatternOriginal, $required);
                 if (preg_match($routePattern, $url, $matches)) {
-                    $controllerActionParams = self::getRouteConfig($routeParams, $routePatternOriginal, $matches);
+                    $controllerActionParams = $this->getRouteConfig($routeParams, $routePatternOriginal, $matches);
                     break;
                 }
             }
         } else {
-            $controllerActionParams = self::getRouteConfig($routes[$url], $url, []);
+            $controllerActionParams = $this->getRouteConfig($this->routes[$url], $url, []);
         }
 
         if (empty($controllerActionParams[0])) {
-            $controllerActionParams = self::getDefaultControllerAction($url);
+            $controllerActionParams = $this->getDefaultControllerAction($url);
         }
 
         return $controllerActionParams;
     }
 
-    private static function generateRoutePattern($routePatternOriginal,Array $routeRequired)
+    private function generateRoutePattern($routePatternOriginal,Array $routeRequired)
     {
         $routePatternOriginal = str_replace('\{' , '{', trim($routePatternOriginal));
         $routePatternOriginal = str_replace('\}' , '}', $routePatternOriginal);
@@ -54,7 +74,7 @@ class UrlDispatcher
         return '#^' . $routePatternOriginal . '$#';
     }
 
-    private static function getRouteConfig(Array $routeParams, $routePatternOriginal, Array $matches)
+    private function getRouteConfig(Array $routeParams, $routePatternOriginal, Array $matches)
     {
         if (empty($routeParams['controller']))
             throw new ConfigException('路由:[' . $routePatternOriginal . ']缺少Controller参数');
@@ -67,19 +87,19 @@ class UrlDispatcher
         return [$routeParams['controller'], $routeParams['action'], $matches];
     }
 
-    private static function getDefaultControllerAction($url)
+    private function getDefaultControllerAction($url)
     {
         $controllerActionParams = ['', '', []];
 
         $routePattern = '#^' . '/(\w+)/(\w+)/(\w+)#';
-        if ($controllerActionArr = self::match($routePattern, $url)) {
+        if ($controllerActionArr = $this->match($routePattern, $url)) {
             $controllerActionParams = [$controllerActionArr[0], $controllerActionArr[1], []];
         }
 
         return $controllerActionParams;
     }
 
-    private static function match($routePattern , $url)
+    private function match($routePattern , $url)
     {
         if (preg_match($routePattern , $url , $matches)) {
             return ['App\Modules\\' . ucfirst($matches[1]) . '\Controller\\' . ucfirst($matches[2]) . 'Controller', $matches[3]];

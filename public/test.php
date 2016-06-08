@@ -1,13 +1,3 @@
 <?php
 
-
-$arr = [
-    'my_error' => function($errno, $errstr)
-                {
-                    echo 'errno=' . $errno;
-                },
-];
-
-set_error_handler($arr['my_error']);
-
-echo $a;
+var_dump($_SERVER['REQUEST_URI']);

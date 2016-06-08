@@ -2,7 +2,7 @@
 
 namespace Minor\Route;
 
-class UrlTools
+class Url
 {
     public static function getBaseUrl($requestUri)
     {

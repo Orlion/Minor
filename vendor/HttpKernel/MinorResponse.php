@@ -6,8 +6,6 @@ class MinorResponse
 {
     private static $_instance = null;
     
-    private $minorSession;
-    
     private $content = '';
     
     private function __construct(){}
@@ -22,15 +20,10 @@ class MinorResponse
         
         return self::$_instance;
     }
-    
-    public function setMinorSession(MinorSession $minorSession)
+
+    public function send()
     {
-        $this->minorSession = $minorSession;
-    }
-    
-    public function getMinorSession()
-    {
-        return $this->minorSession;
+        echo is_string($this->content) ? $this->content : '';
     }
     
     public function setHeader($header)
@@ -40,31 +33,27 @@ class MinorResponse
     
     public function setContent($content)
     {
-        $this->content = (string)$content;
+        $this->content = $content;
     }
     
     public function beforeContent($content)
     {
-        $this->content = (string)$content . $this->content;
+        return is_string($this->content) && is_string($content) ? $this->content = $content . $this->content : false;
     }
     
     public function appendContent($content)
     {
-        $this->content .= (string)$content;
+        return is_string($this->content) && is_string($content) ? $this->content .= $content : false;
     }
     
     public function getContent()
     {
-        return (string)$this->content;
-    }
-    
-    public function outContent()
-    {
-        echo $this->getContent();
+        return $this->content;
     }
     
     public function __toString()
     {
-        return (string)$this->content;
+        return is_string($this->content) ? $this->content : '';
     }
 }
+
