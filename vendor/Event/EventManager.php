@@ -17,14 +17,12 @@ class EventManager
     {
         $eventClass = get_class($event);
 
-        $events = self::getEvents();
+        if (!empty(self::$events[$eventClass])) {
 
-        if (!empty($events[$eventClass])) {
-
-            if (!is_array($events[$eventClass]))
+            if (!is_array(self::$events[$eventClass]))
                 throw new ConfigException('事件[' . $eventClass . ']配置错误,配置必须是数组');
 
-            foreach ($events[$eventClass] as $listenerName => $methodName) {
+            foreach (self::$events[$eventClass] as $listenerName => $methodName) {
                 self::invoke($listenerName, $methodName, $event);
             }
         }

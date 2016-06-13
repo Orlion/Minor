@@ -3,6 +3,7 @@
 namespace Minor\Framework;
 
 use Minor\Config\Config;
+use Minor\Event\EventManager;
 use Minor\HttpKernel\MinorRequest;
 use Minor\Controller\ControllerException;
 use Minor\Controller\ControllerBuilder;
@@ -15,27 +16,29 @@ class App
 {
     private static $_instance = null;
 
-    private $minorResponse = null;
+    private $minorRequest = null;
 
     private $serviceContainer = null;
 
     private $router = null;
     
-    private function __construct(Array $config, ServiceContainer $serviceContainer, Router $router, Array $events)
+    private function __construct(Array $config, Array $providers, Array $routes, Array $events)
     {
         Config::init($config);
-        $this->serviceContainer = $serviceContainer;
-        $this->router = $router;
 
-        $this->minorResponse = MinorResponse::getInstance();
+        $this->serviceContainer =ServiceContainer::getInstance($providers);
+
+        $this->router = Router::getInstance($routes);
+
+        EventManager::init($events);
     }
     
     private function __clone(){}
     
-    public static function getInstance(ServiceContainer $serviceContainer)
+    public static function getInstance(Array $config, Array $providers, Array $routes, Array $events)
     {
         if (is_null(self::$_instance) || !self::$_instance instanceof self) {
-            self::$_instance = new self($serviceContainer);
+            self::$_instance = new self($config, $providers, $routes, $events);
         }
         
         return self::$_instance;
@@ -43,6 +46,8 @@ class App
     
     public function handle(MinorRequest $minorRequest)
     {
+        $this->minorRequest = $minorRequest;
+
         list($controllerName, $actionName, $params) = $this->router->dispatcher($minorRequest->getUrl());
 
         if (!($controllerName && $actionName && is_array($params)))
@@ -51,31 +56,32 @@ class App
         return $this->invoke($controllerName, $actionName, $params);
     }
 
-    public function invoke($controllerName, $actionName, Array $params)
+    public function invoke($controllerName, $actionName, Array $params = [])
     {
         list($controller, $action) = ControllerBuilder::buildController($controllerName, $actionName);
+
+        // 注入
+        $controller->app = $this;
+        $controller->minorRequest  = $this->minorRequest;
+        $controller->minorResponse = MinorResponse::getInstance();
+
         try {
             $res = $action->invokeArgs($controller, $params);
-            ($res instanceof MinorResponse) ? $this->minorResponse = $res : $this->minorResponse->appendContent($res);
+            $res !==  $controller->minorResponse && $controller->minorResponse->setContent($res);
         } catch (ReflectionException $re) {
             throw new ControllerException('自定义控制器[' . $controllerName . ']:方法[' . $actionName . ']执行失败，请检查配置文件');
         }
 
-        return $this->minorResponse;
+        return $controller->minorResponse;
     }
 
-    public function get($serviceName)
+    public function getServiceContainer()
     {
-        return $this->serviceContainer->get($serviceName);
+        return $this->serviceContainer;
     }
 
-    public function bind($serviceName, $service)
+    public function getRouter()
     {
-        $this->serviceContainer->bind($serviceName, $service);
-    }
-
-    public function singleton($serviceName, $service)
-    {
-        $this->serviceContainer->singleton($serviceName, $service);
+        return $this->router;
     }
 }

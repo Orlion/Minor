@@ -4,6 +4,8 @@
  */
 namespace Minor\HttpKernel;
 
+use Minor\Config\Config;
+
 class MinorRequest
 {
     private static $_instance = null;
@@ -14,11 +16,11 @@ class MinorRequest
 
     private $baseUrl;
 
-    private $method;
+    private $method = 'get';
 
-    private $getParams;
+    private $getParams = [];
 
-    private $postParams;
+    private $postParams = [];
 
     private $minorCookie = null;
 
@@ -32,28 +34,28 @@ class MinorRequest
 
     private $server = [];
 
-    private function __construct($url, $method = 'get', Array $getParams = [], Array $postParams = [], $requestUrl = null, $baseUrl = null, $ip = null, $os = null, $browser = null, Array $server = [], MinorCookie $minorCookie = null, MinorSession $minorSession = null)
+    private function __construct($url = null, $requestUrl = null, $baseUrl = null, $method = 'get', Array $getParams = [], Array $postParams = [], MinorCookie $minorCookie = null, MinorSession $minorSession = null, $ip = null, $os = null, $browser = null, Array $server = [])
     {
-        $this->url = $url;
-        $this->method = $method;
-        $this->getParams = $getParams;
-        $this->postParams = $postParams;
-        $this->requestUrl = $requestUrl;
-        $this->baseUrl = $baseUrl;
-        $this->ip = $ip;
-        $this->os = $os;
-        $this->browser = $browser;
+        $this->url          = $url;
+        $this->requestUrl   = $requestUrl;
+        $this->baseUrl      = $baseUrl;
+        $this->method       = $method;
+        $this->getParams    = $getParams;
+        $this->postParams   = $postParams;
         $this->minorCookie  = $minorCookie;
         $this->minorSession = $minorSession;
-        $this->server = $server;
+        $this->ip           = $ip;
+        $this->os           = $os;
+        $this->browser      = $browser;
+        $this->server       = $server;
     }
 
     private function __clone(){}
 
-    public static function getInstance($url, $method = 'get', Array $getParams = [], Array $postParams = [], $requestUrl = null, $baseUrl = null, $ip = null, $os = null, $browser = null, Array $server = [], MinorCookie $minorCookie = null, MinorSession $minorSession = null)
+    public static function getInstance($url = null, $requestUrl = null, $baseUrl = null, $method = 'get', Array $getParams = [], Array $postParams = [], MinorCookie $minorCookie = null, MinorSession $minorSession = null, $ip = null, $os = null, $browser = null, Array $server = [])
     {
         if (is_null(self::$_instance) || !self::$_instance instanceof self) {
-            self::$_instance = new self($url, $method, $getParams, $postParams, $requestUrl, $baseUrl, $ip, $os, $browser, $server, $minorCookie, $minorSession);
+            self::$_instance = new self($url, $requestUrl, $baseUrl, $method, $getParams, $postParams, $minorCookie, $minorSession, $ip, $os, $browser, $server);
         }
 
         return self::$_instance;
@@ -64,45 +66,60 @@ class MinorRequest
         return $this->url;
     }
 
+    public function setUrl($url)
+    {
+        $this->url = $url;
+    }
+
+    public function getRequestUrl()
+    {
+        return $this->requestUrl;
+    }
+
+    public function setRequestUrl($requestUrl)
+    {
+        $this->requestUrl = $requestUrl;
+    }
+
+    public function getBaseUrl()
+    {
+        return $this->baseUrl;
+    }
+
+    public function setBaseUrl($baseUrl)
+    {
+        $this->baseUrl = $baseUrl;
+    }
+
     public function getMethod()
     {
         return $this->method;
     }
 
+    public function setMethod($method)
+    {
+        $this->method = $method;
+    }
+
+    public function setGetParams(Array $getParams)
+    {
+        $this->getParams = $getParams;
+    }
+
+    public function setPostParams(Array $postParams)
+    {
+        $this->postParams = $postParams;
+    }
+
     public function getParams()
     {
-        return $this->params;
+        return array_merge($this->getParams, $this->postParams);
     }
 
-    public function getServer()
+    public function setParams(Array $getParams, Array $postParams)
     {
-        return $this->server;
-    }
-
-    public function getParameter($key , $default = '')
-    {
-        if (isset($this->params[$key])) {
-            $appConfig = Context::getConfig()->getApp();
-            if (!empty($appConfig['DEFAULT_FILTER'])) {
-                $defaultFilter = $appConfig['DEFAULT_FILTER'];
-
-                if (is_string($defaultFilter)) {
-                    if (!function_exists($defaultFilter))
-                        throw new ConfigException('配置文件[app.php]:配置项[DEFAULT_FILTER]函数[' . $defaultFilter . ']不存在');
-                    
-                    return $defaultFilter($this->params[$key]);
-                }
-
-                if (!($defaultFilter instanceof \Closure))
-                    throw new ConfigException('配置文件[app.php]:配置项[DEFAULT_FILTER]必须为字符串或匿名函数');
-
-                return $defaultFilter($this->params[$key]);
-            }
-
-            return $this->params[$key];
-        }
-
-        return $default;
+        $this->getParams  = $getParams;
+        $this->postParams = $postParams;
     }
 
     public function getMinorCookie()
@@ -110,19 +127,179 @@ class MinorRequest
         return $this->minorCookie;
     }
 
+    public function setMinorCookie(MinorCookie $minorCookie)
+    {
+        $this->minorCookie = $minorCookie;
+    }
+
     public function getMinorSession()
     {
         return $this->minorSession;
     }
 
+    public function setMinorSession(MinorSession $minorSession)
+    {
+        $this->minorSession = $minorSession;
+    }
+
     public function getIp()
     {
+        if (empty($this->ip)) {
+            if (array_key_exists('HTTP_X_FORWARDED_FOR',$_SERVER) && $_SERVER["HTTP_X_FORWARDED_FOR"]) {
+                $ip = $_SERVER["HTTP_X_FORWARDED_FOR"];
+            } elseif (array_key_exists('HTTP_CLIENT_IP',$_SERVER) && $_SERVER["HTTP_CLIENT_IP"]) {
+                $ip = $_SERVER["HTTP_CLIENT_IP"];
+            } elseif ($_SERVER["REMOTE_ADDR"]) {
+                $ip = $_SERVER["REMOTE_ADDR"];
+            } elseif (getenv("HTTP_X_FORWARDED_FOR")) {
+                $ip = getenv("HTTP_X_FORWARDED_FOR");
+            } elseif (getenv("HTTP_CLIENT_IP")) {
+                $ip = getenv("HTTP_CLIENT_IP");
+            } elseif (getenv("REMOTE_ADDR")) {
+                $ip = getenv("REMOTE_ADDR");
+            } else {
+                $ip = "Unknown";
+            }
+            if ( strpos($ip,',') && $iparr = explode(',',$ip) ) {
+                $ip = $iparr[0];
+            }
+
+            $this->ip = $ip;
+        }
+
         return $this->ip;
+    }
+
+    public function setIp($ip)
+    {
+        $this->ip = $ip;
     }
 
     public function getOs()
     {
+        if (empty($this->os)) {
+            $agent = $_SERVER['HTTP_USER_AGENT'];
+
+            if (preg_match('/win/i', $agent) && strpos($agent, '95'))
+            {
+                $os = 'Windows 95';
+            }
+            else if (preg_match('/win 9x/i', $agent) && strpos($agent, '4.90'))
+            {
+                $os = 'Windows ME';
+            }
+            else if (preg_match('/win/i', $agent) && preg_match('/98/i', $agent))
+            {
+                $os = 'Windows 98';
+            }
+            else if (preg_match('/win/i', $agent) && preg_match('/nt 6.0/i', $agent))
+            {
+                $os = 'Windows Vista';
+            }
+            else if (preg_match('/win/i', $agent) && preg_match('/nt 6.1/i', $agent))
+            {
+                $os = 'Windows 7';
+            }
+            else if (preg_match('/win/i', $agent) && preg_match('/nt 6.2/i', $agent))
+            {
+                $os = 'Windows 8';
+            }else if(preg_match('/win/i', $agent) && preg_match('/nt 10.0/i', $agent))
+            {
+                $os = 'Windows 10';#添加win10判断
+            }else if (preg_match('/win/i', $agent) && preg_match('/nt 5.1/i', $agent))
+            {
+                $os = 'Windows XP';
+            }
+            else if (preg_match('/win/i', $agent) && preg_match('/nt 5/i', $agent))
+            {
+                $os = 'Windows 2000';
+            }
+            else if (preg_match('/win/i', $agent) && preg_match('/nt/i', $agent))
+            {
+                $os = 'Windows NT';
+            }
+            else if (preg_match('/win/i', $agent) && preg_match('/32/i', $agent))
+            {
+                $os = 'Windows 32';
+            }
+            else if (preg_match('/linux/i', $agent))
+            {
+                $os = 'Linux';
+            }
+            else if (preg_match('/unix/i', $agent))
+            {
+                $os = 'Unix';
+            }
+            else if (preg_match('/sun/i', $agent) && preg_match('/os/i', $agent))
+            {
+                $os = 'SunOS';
+            }
+            else if (preg_match('/ibm/i', $agent) && preg_match('/os/i', $agent))
+            {
+                $os = 'IBM OS/2';
+            }
+            else if (preg_match('/Mac/i', $agent) && preg_match('/PC/i', $agent))
+            {
+                $os = 'Macintosh';
+            }
+            else if (preg_match('/PowerPC/i', $agent))
+            {
+                $os = 'PowerPC';
+            }
+            else if (preg_match('/AIX/i', $agent))
+            {
+                $os = 'AIX';
+            }
+            else if (preg_match('/HPUX/i', $agent))
+            {
+                $os = 'HPUX';
+            }
+            else if (preg_match('/NetBSD/i', $agent))
+            {
+                $os = 'NetBSD';
+            }
+            else if (preg_match('/BSD/i', $agent))
+            {
+                $os = 'BSD';
+            }
+            else if (preg_match('/OSF1/i', $agent))
+            {
+                $os = 'OSF1';
+            }
+            else if (preg_match('/IRIX/i', $agent))
+            {
+                $os = 'IRIX';
+            }
+            else if (preg_match('/FreeBSD/i', $agent))
+            {
+                $os = 'FreeBSD';
+            }
+            else if (preg_match('/teleport/i', $agent))
+            {
+                $os = 'teleport';
+            }
+            else if (preg_match('/flashget/i', $agent))
+            {
+                $os = 'flashget';
+            }
+            else if (preg_match('/webzip/i', $agent))
+            {
+                $os = 'webzip';
+            } else if (preg_match('/offline/i', $agent)) {
+                $os = 'offline';
+            } else {
+                $os = '未知操作系统';
+            }
+
+            $this->os = $os;
+        }
+
         return $this->os;
+    }
+
+    public function setOs($os)
+    {
+        $this->os = $os;
     }
 
     public function getBrowser()
@@ -158,7 +335,7 @@ class MinorRequest
                 preg_match("/rv:([\d\.]+)/", $sys, $IE);
                 $exp[0] = "IE";
                 $exp[1] = $IE[1];
-            }else {
+            } else {
                 $exp[0] = "未知浏览器";
                 $exp[1] = "";
             }
@@ -169,33 +346,76 @@ class MinorRequest
         return $this->browser;
     }
 
-    public function setUrl($url)
+    public function setBrowser($browser)
     {
-        $this->url = $url;
+        $this->browser = $browser;
     }
 
-    public function setMethod($method)
+    public function getServer()
     {
-        $this->method = $method;
+        return $this->server;
     }
 
-    public function setParams(Array $params)
+    public function setServer(Array $server)
     {
-        $this->params = $params;
+        $this->server = $server;
     }
 
-    public function setParameter($key , $value)
+    public function get($key , $default = '')
     {
-        $this->params[$key] = $value;
+        if (isset($this->getParams[$key])) {
+            $defaultFilter = Config::get(['app' => 'DEFAULT_FILTER']);
+            if ($defaultFilter) {
+                if (is_string($defaultFilter)) {
+                    if (!function_exists($defaultFilter))
+                        throw new ConfigException('配置文件[app.php]:配置项[DEFAULT_FILTER]函数[' . $defaultFilter . ']不存在');
+                    
+                    return $defaultFilter($this->getParams[$key]);
+                }
+
+                if (!($defaultFilter instanceof \Closure))
+                    throw new ConfigException('配置文件[app.php]:配置项[DEFAULT_FILTER]必须为字符串或匿名函数');
+
+                return $defaultFilter($this->getParams[$key]);
+            }
+
+            return $this->getParams[$key];
+        }
+
+        return $default;
     }
 
-    public function setMinorCookie(MinorCookie $minorCookie)
+    public function setGetParameter($key , $value)
     {
-        $this->minorCookie = $minorCookie;
+        $this->getParams[$key] = $value;
     }
 
-    public function setMinorSession(MinorSession $minorSession)
+    public function post($key , $default = '')
     {
-        $this->minorSession = $minorSession;
+        if (isset($this->postParams[$key])) {
+            $defaultFilter = Config::get(['app' => 'DEFAULT_FILTER']);
+            if ($defaultFilter) {
+                if (is_string($defaultFilter)) {
+                    if (!function_exists($defaultFilter))
+                        throw new ConfigException('配置文件[app.php]:配置项[DEFAULT_FILTER]函数[' . $defaultFilter . ']不存在');
+
+                    return $defaultFilter($this->postParams[$key]);
+                }
+
+                if (!($defaultFilter instanceof \Closure))
+                    throw new ConfigException('配置文件[app.php]:配置项[DEFAULT_FILTER]必须为字符串或匿名函数');
+
+                return $defaultFilter($this->postParams[$key]);
+            }
+
+            return $this->postParams[$key];
+        }
+
+        return $default;
+    }
+
+    public function setPostParameter($key, $value)
+    {
+        $this->postParams[$key] = $value;
     }
 }

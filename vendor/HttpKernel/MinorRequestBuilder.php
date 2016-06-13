@@ -2,23 +2,23 @@
 
 namespace Minor\HttpKernel;
 
+use Minor\Route\Url;
+
 class MinorRequestBuilder
 {
     public static function buildMinorRequest()
     {
 
         $minorRequest = MinorRequest::getInstance(
-            self::getUrl(),
+            self::getUrl(), $_SERVER['REQUEST_URI'], self::getBaseUrl($_SERVER['REQUEST_URI']),
             self::getMethod(),
             $_GET,
             $_POST,
-            $_SERVER['REQUEST_URI'],
-            self::getBaseUrl(),
-            self::getIp(),
-            self::getOs(),
-            self::getBrowser(),
             self::getMinorCookie(),
             self::getMinorSession(),
+            null,
+            null,
+            null,
             $_SERVER
         );
 
@@ -82,9 +82,7 @@ class MinorRequestBuilder
         if (preg_match('/win/i', $agent) && strpos($agent, '95'))
         {
             $os = 'Windows 95';
-        }
-        else if (preg_match('/win 9x/i', $agent) && strpos($agent, '4.90'))
-        {
+        } else if (preg_match('/win 9x/i', $agent) && strpos($agent, '4.90')) {
             $os = 'Windows ME';
         }
         else if (preg_match('/win/i', $agent) && preg_match('/98/i', $agent))

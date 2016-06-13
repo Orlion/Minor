@@ -7,9 +7,9 @@
  */
 define('APP_DIR', realpath(__DIR__.'/../app/') .DIRECTORY_SEPARATOR);
 
-define('PUBLIC_DIR', realpath(__DIR__.'/../public/') .DIRECTORY_SEPARATOR);
+define('PUBLIC_DIR', realpath(__DIR__) .DIRECTORY_SEPARATOR);
 
-define('VENDOR_DIR', realpath(__DIR__) .DIRECTORY_SEPARATOR);
+define('VENDOR_DIR', realpath(__DIR__.'/../vendor/') .DIRECTORY_SEPARATOR);
 
 define('ROOT_DIR', realpath(__DIR__.'/../') .DIRECTORY_SEPARATOR);
 /*
@@ -33,10 +33,10 @@ $loader = require VENDOR_DIR . 'autoload.php';
 |
 */
 $app = \Minor\Framework\App::getInstance(
-    $config = ['app' => require APP_DIR . 'Config/app.php', 'test' => require APP_DIR . 'Config/test.php'],
-    $router = \Minor\Route\Router::getInstance(require APP_DIR . 'Config/routes.php'),
-    $serviceContainer = \Minor\Ioc\ServiceContainer::getInstance(require APP_DIR . 'Config/providers.php'),
-    $events = require APP_DIR . 'Config/events.php'
+    $config     = ['app' => require APP_DIR . 'Config/app.php', 'test' => require APP_DIR . 'Config/test.php'],
+    $providers  = require APP_DIR . 'Config/providers.php',
+    $routes     = require APP_DIR . 'Config/routes.php',
+    $events     = require APP_DIR . 'Config/events.php'
 );
 
 $response = $app->handle(

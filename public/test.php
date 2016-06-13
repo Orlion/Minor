@@ -1,3 +1,11 @@
 <?php
 
-var_dump($_SERVER['REQUEST_URI']);
+class Foo
+{
+
+}
+
+$foo = new Foo();
+$foo->a = 'a';
+
+echo $foo->a;

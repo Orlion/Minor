@@ -2,26 +2,31 @@
 
 namespace Minor\Controller;
 
-use Minor\Framework\Context;
+use Minor\HttpKernel\MinorRequest;
 
 class Controller
 {
-    public function redirect($url)
+    public $app = null;
+
+    public $minorRequest = null;
+
+    public $minorResponse = null;
+
+    protected function redirect($url)
     {
         ob_end_clean();
         header('location:' . $url);
         exit();
     }
 
-    public function forward($controller, $action, Array $params)
+    protected function forward($controller, $action, Array $params)
     {
-        return Context::getApp()->invoke($controller, $action, $params);
+        return $this->app->invoke($controller, $action, $params);
     }
 
-    public function forwardUrl($url)
+    protected function forwardUrl($url)
     {
-        $minorRequest = Context::setMinorRequest();
-        $minorRequest->setUrl($url);
-        return Context::getApp()->handle($minorRequest);
+        $minorRequest = MinorRequest::getInstance($url);
+        return $this->app->handle($minorRequest);
     }
 }

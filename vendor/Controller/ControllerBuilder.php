@@ -12,10 +12,17 @@ class ControllerBuilder
         try {
             $controllerClass = new ReflectionClass($controllerName);
 
-            if (($constructor = $controllerClass->getConstructor())) {
-                if ($constructor->getNumberOfRequiredParameters > 0)
-                    throw new ControllerException('自定义控制器[' . $controllerName . ']:构造函数存在必须输入参数');
-            }
+            if (($constructor = $controllerClass->getConstructor()) && $constructor->getNumberOfRequiredParameters > 0)
+                throw new ControllerException('自定义控制器[' . $controllerName . ']:构造函数存在必须输入参数');
+
+            if (!$controllerClass->hasMethod('setApp'))
+                throw new ControllerException('自定义控制器[' . $controllerName . ']:未定义方法[setApp]');
+
+            if ($controllerClass->hasMethod('setMinorRequest'))
+                throw new ControllerException('自定义控制器[' . $controllerName . ']:未定义方法[setMinorRequest]');
+
+            if ($controllerClass->hasMethod('setMinorResponse'))
+                throw new ControllerException('自定义控制器[' . $controllerName . ']:未定义方法[setMinorResponse]');
 
             return [$controllerClass->newInstance(), self::getReflectionMethod($controllerClass, $controllerName, $actionName)];
         } catch (ReflectionException $re) {
