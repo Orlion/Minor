@@ -3,6 +3,7 @@
 namespace Minor\Controller;
 
 use Minor\HttpKernel\MinorRequest;
+use Minor\Route\Url;
 
 class Controller
 {
@@ -15,7 +16,7 @@ class Controller
     protected function redirect($url)
     {
         ob_end_clean();
-        header('location:' . $url);
+        header('location:' . Url::genUrl($url));
         exit();
     }
 

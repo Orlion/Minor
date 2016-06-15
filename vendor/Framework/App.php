@@ -11,6 +11,8 @@ use Minor\HttpKernel\MinorResponse;
 use Minor\Ioc\ServiceContainer;
 use Minor\Route\Router;
 use Minor\Route\RouteException;
+use Minor\Route\Url;
+use Minor\View\View;
 
 class App
 {
@@ -24,11 +26,15 @@ class App
     
     private function __construct(Array $config, Array $providers, Array $routes, Array $events)
     {
+        !empty($config['app']) && $this->init($config['app']);
+
         Config::init($config);
 
         $this->serviceContainer =ServiceContainer::getInstance($providers);
 
         $this->router = Router::getInstance($routes);
+
+        Url::setRouter($this->router);
 
         EventManager::init($events);
     }
@@ -46,14 +52,23 @@ class App
     
     public function handle(MinorRequest $minorRequest)
     {
+        $minorResponse = MinorResponse::getInstance();
+
         $this->minorRequest = $minorRequest;
 
         list($controllerName, $actionName, $params) = $this->router->dispatcher($minorRequest->getUrl());
 
-        if (!($controllerName && $actionName && is_array($params)))
-            throw new RouteException('404');
+        if (!($controllerName && $actionName && is_array($params))) {
+            if (!Config::get(['app' => 'DEBUG']) && ($handler = Config::get(['app' => '404_HANDLER'])) && ($handler instanceof \Closure)) {
+                $handler($minorRequest->getRequestUrl());
+            } else {
+                throw new RouteException('404 Not Found');
+            }
+        } else {
+            $minorResponse = $this->invoke($controllerName, $actionName, $params);
+        }
 
-        return $this->invoke($controllerName, $actionName, $params);
+        return $minorResponse;
     }
 
     public function invoke($controllerName, $actionName, Array $params = [])
@@ -83,5 +98,22 @@ class App
     public function getRouter()
     {
         return $this->router;
+    }
+
+    private function init(Array $appConfig)
+    {
+        !empty($appConfig['CHARSET'])  && header('Content-type:text/html;charset=' . $appConfig['CHARSET']);
+
+        !empty($appConfig['TIMEZONE']) && date_default_timezone_set($appConfig['TIMEZONE']);
+
+        if (empty($appConfig['DEBUG'])) {
+
+            ini_set('html_errors',false);
+            ini_set('display_errors',false);
+
+            !empty($appConfig['EXCEPTION_HANDLER']) && ($appConfig['EXCEPTION_HANDLER'] instanceof \Closure) && set_exception_handler($appConfig['EXCEPTION_HANDLER']);
+
+            !empty($appConfig['ERROR_HANDLER']) && ($appConfig['ERROR_HANDLER'] instanceof \Closure) && set_error_handler($appConfig['ERROR_HANDLER']);
+        }
     }
 }

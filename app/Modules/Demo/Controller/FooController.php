@@ -28,9 +28,4 @@ class FooController extends Controller
 
         return $this->minorResponse;
     }
-
-    public function setApp()
-    {
-        echo 'a';
-    }
 }

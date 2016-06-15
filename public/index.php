@@ -5,6 +5,14 @@
  * @package  Minor
  * @author   Orlion <orlionml@gmail.com>
  */
+/*
+|--------------------------------------------------------------------------
+| Define
+|--------------------------------------------------------------------------
+|
+| Define
+|
+*/
 define('APP_DIR', realpath(__DIR__.'/../app/') .DIRECTORY_SEPARATOR);
 
 define('PUBLIC_DIR', realpath(__DIR__) .DIRECTORY_SEPARATOR);
@@ -29,7 +37,7 @@ $loader = require VENDOR_DIR . 'autoload.php';
 | Run The Application
 |--------------------------------------------------------------------------
 |
-| Once we have the minor application, we can run.
+| Run The Application
 |
 */
 $app = \Minor\Framework\App::getInstance(

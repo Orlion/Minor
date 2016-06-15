@@ -1,9 +1,24 @@
 <?php
-
+/**
+ * Url
+ *
+ */
 namespace Minor\Route;
 
 class Url
 {
+    private static $router = null;
+
+    public static function setRouter(Router $router)
+    {
+        self::$router = $router;
+    }
+
+    public static function genUrl($path)
+    {
+        return self::$router->to($path);
+    }
+
     public static function getBaseUrl($requestUri)
     {
         $filename = basename($_SERVER['SCRIPT_FILENAME']); // index.php
