@@ -11,7 +11,7 @@ return [
     // 是否自动开启session
     'SESSION_START' => TRUE,
 
-    'DEBUG'         =>  false,
+    'DEBUG'         =>  true,
 
     'EXCEPTION_HANDLER' =>  function($e){
                                 header('HTTP/1.1 500 Internal Server Error');
