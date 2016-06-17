@@ -2,10 +2,16 @@
 
 class Foo
 {
-
+    public static function test()
+    {
+        throw new Exception('a');
+        return 'a';
+    }
 }
 
-$foo = new Foo();
-$foo->a = 'a';
-
-echo $foo->a;
+try{
+    $a = Foo::test();
+} catch (Exception $e) {
+    echo 'b';
+}
+var_dump($a);

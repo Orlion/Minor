@@ -1,6 +1,6 @@
 <?php
 
-namespace Minor\Ioc;
+namespace Minor\Framework;
 
 use Exception;
 

@@ -2,6 +2,8 @@
 
 namespace Minor\Ioc;
 
+use ReflectionException;
+
 class ServiceProviderBuilder
 {
     public static function buildServiceProvider($serviceContainer, $serviceName, $serviceClass, Array $arguments = [])
@@ -35,7 +37,7 @@ class ServiceProviderBuilder
             $bootMethod->invokeArgs($serviceProvider, $arguments);
 
             return $serviceProvider;
-        } catch(\ReflectionException $re) {
+        } catch(ReflectionException $re) {
             throw new ServiceException('服务提供者[' . $serviceName . ']:实例化失败');
         }
     }

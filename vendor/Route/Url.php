@@ -14,7 +14,7 @@ class Url
         self::$router = $router;
     }
 
-    public static function genUrl($path)
+    public static function gen($path)
     {
         return self::$router->to($path);
     }

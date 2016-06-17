@@ -3,7 +3,6 @@
 namespace Minor\Ioc;
 
 use Minor\Config\ConfigException;
-use Minor\Framework\Context;
 
 class ServiceContainer
 {
@@ -39,7 +38,13 @@ class ServiceContainer
 
     public function get($serviceName)
     {
-        return $this->build($serviceName);
+        try {
+            return $this->build($serviceName);
+        } catch (ServiceException $se) {
+            throw $se;
+        } catch (ConfigException $ce) {
+            throw $ce;
+        }
     }
 
     private function build($serviceName)
@@ -48,6 +53,7 @@ class ServiceContainer
             throw new ServiceException('服务提供者[' . $serviceName . ']:未注册到服务容器中');
 
         $serviceConfig = $this->providers[$serviceName];
+
         if (empty($serviceConfig['class']))
             throw new ConfigException('服务提供者[' . $serviceName . ']:缺少class配置');
 

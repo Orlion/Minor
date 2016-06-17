@@ -9,14 +9,10 @@ class Controller
 {
     public $app = null;
 
-    public $minorRequest = null;
-
-    public $minorResponse = null;
-
     protected function redirect($url)
     {
         ob_end_clean();
-        header('location:' . Url::genUrl($url));
+        header('location:' . Url::gen($url));
         exit();
     }
 

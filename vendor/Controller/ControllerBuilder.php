@@ -12,15 +12,13 @@ class ControllerBuilder
         try {
             $controllerClass = new ReflectionClass($controllerName);
 
-            if (($constructor = $controllerClass->getConstructor()) && $constructor->getNumberOfRequiredParameters > 0)
-                throw new ControllerException('自定义控制器[' . $controllerName . ']:构造函数can not have parameter');
+            if (($constructor = $controllerClass->getConstructor()) && $constructor->getNumberOfRequiredParameters() > 0)
+                throw new ControllerException('自定义控制器[' . $controllerName . ']:构造函数不能有参数');
 
             return [$controllerClass->newInstance(), self::getReflectionMethod($controllerClass, $controllerName, $actionName)];
         } catch (ReflectionException $re) {
             throw new ControllerException('自定义控制器[' . $controllerName . ']:实例化失败');
         }
-
-        return null;
     }
 
     public static function getReflectionMethod(ReflectionClass $class , $className , $actionName)

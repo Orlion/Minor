@@ -24,8 +24,6 @@ class FooController extends Controller
         $shopProxy = Proxy::newProxyInstance($shop, $log);
         $shopProxy->buy($productName);
 
-        $this->minorResponse->setContent(View::render('Demo:Foo:bar.php', ['controllerName' => 'FooController', 'actionName' => 'bar']));
-
-        return $this->minorResponse;
+        return View::render('Demo:Foo:bar.php', ['controllerName' => 'FooController', 'actionName' => 'bar']);
     }
 }

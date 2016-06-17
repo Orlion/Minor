@@ -22,8 +22,12 @@ class EventManager
             if (!is_array(self::$events[$eventClass]))
                 throw new ConfigException('事件[' . $eventClass . ']配置错误,配置必须是数组');
 
-            foreach (self::$events[$eventClass] as $listenerName => $methodName) {
-                self::invoke($listenerName, $methodName, $event);
+            try {
+                foreach (self::$events[$eventClass] as $listenerName => $methodName) {
+                    self::invoke($listenerName, $methodName, $event);
+                }
+            } catch (ListenerException $le) {
+                throw $le;
             }
         }
     }
@@ -36,7 +40,5 @@ class EventManager
         } catch (ReflectionException $re) {
             throw new ListenerException('自定义监听器[' . $listenerName . ']:方法[' . $methodName . ']执行失败，请检查配置文件');
         }
-
-        return null;
     }
 }
