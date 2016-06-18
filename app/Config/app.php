@@ -15,16 +15,16 @@ return [
 
     'EXCEPTION_HANDLER' =>  function($e){
                                 header('HTTP/1.1 500 Internal Server Error');
-                                exit(require APP_DIR . 'View/exception.php');
+                                exit(require APP_DIR . 'Resource/exception.php');
                             },
     'ERROR_HANDLER' =>  function($errno, $errstr, $errfile, $errline){
                             header('HTTP/1.1 500 Internal Server Error');
-                            exit(require APP_DIR . 'View/error.php');
+                            exit(require APP_DIR . 'Resource/error.php');
                         },
     '404_HANDLER'   =>  function($url){
                             header('HTTP/1.1 404 Not Found');
                             header("status: 404 Not Found");
-                            exit(require APP_DIR . 'View/404.php');
+                            exit(require APP_DIR . 'Resource/404.php');
                         },
 
 

@@ -9,7 +9,6 @@ use Minor\Event\EventManager;
 use Minor\Proxy\Proxy;
 use Minor\View\View;
 
-
 class FooController extends Controller
 {
     public function bar($productName)

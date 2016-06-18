@@ -4,6 +4,7 @@ namespace App\Lib;
 
 class Shop
 {
+
     private $mail = null;
 
     public function boot(MailProvider $mail)

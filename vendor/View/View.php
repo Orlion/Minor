@@ -17,7 +17,8 @@ class View
 
         ob_start();
 
-        require_once(!defined('VENDOR_DIR') ? VENDOR_DIR . 'View/functions.php' : __DIR__ . '/functions.php');
+        $functionsFilePath = (!defined('APP_DIR') ? APP_DIR : realpath(__DIR__ . '/../../app/') .DIRECTORY_SEPARATOR) . 'Resource/functions.php';
+        is_file($functionsFilePath) && require_once $functionsFilePath;
         extract($params);
         require $viewFilePath;
 
