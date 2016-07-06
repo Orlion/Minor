@@ -7,7 +7,7 @@ class Shop
 
     private $mail = null;
 
-    public function boot(MailProvider $mail)
+    public function __construct(MailProvider $mail)
     {
         $this->mail = $mail;
     }

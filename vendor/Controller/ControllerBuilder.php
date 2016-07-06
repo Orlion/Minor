@@ -7,15 +7,15 @@ use ReflectionException;
 
 class ControllerBuilder
 {
-    public static function buildController($controllerName, $actionName)
+    public static function buildController($controllerName, $actionName, \Minor\Framework\App $app)
     {
         try {
             $controllerClass = new ReflectionClass($controllerName);
 
-            if (($constructor = $controllerClass->getConstructor()) && $constructor->getNumberOfRequiredParameters() > 0)
-                throw new ControllerException('自定义控制器[' . $controllerName . ']:构造函数不能有参数');
+            if (!($constructor = $controllerClass->getConstructor()) || $constructor->getNumberOfRequiredParameters() > 1)
+                throw new ControllerException('自定义控制器[' . $controllerName . ']:构造函数必须有且只有一个Minor\Framework\App参数');
 
-            return [$controllerClass->newInstance(), self::getReflectionMethod($controllerClass, $controllerName, $actionName)];
+            return [$controllerClass->newInstance($app), self::getReflectionMethod($controllerClass, $controllerName, $actionName)];
         } catch (ReflectionException $re) {
             throw new ControllerException('自定义控制器[' . $controllerName . ']:实例化失败');
         }

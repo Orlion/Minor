@@ -75,9 +75,7 @@ class App
     {
         try {
 
-            list($controller, $action) = ControllerBuilder::buildController($controllerName, $actionName);
-
-            $controller->app = $this;
+            list($controller, $action) = ControllerBuilder::buildController($controllerName, $actionName, $this);
 
             return $action->invokeArgs($controller, $params);
         } catch (ControllerException $ce) {

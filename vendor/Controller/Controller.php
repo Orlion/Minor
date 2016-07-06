@@ -9,6 +9,11 @@ class Controller
 {
     public $app = null;
 
+    public function __construct(\Minor\Framework\App $app)
+    {
+        $this->app = $app;
+    }
+
     protected function redirect($url)
     {
         ob_end_clean();
@@ -26,4 +31,5 @@ class Controller
         $minorRequest = MinorRequest::getInstance($url);
         return $this->app->handle($minorRequest);
     }
+    
 }

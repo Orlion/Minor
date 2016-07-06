@@ -11,6 +11,7 @@ use Minor\View\View;
 
 class FooController extends Controller
 {
+
     public function bar($productName)
     {
         $event = new DemoEvent('DemoEvent');

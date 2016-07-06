@@ -10,7 +10,7 @@ class MailProvider
 
     private $password;
 
-    public function boot($from, $username, $password)
+    public function __construct($from, $username, $password)
     {
         $this->from = $from;
         $this->username = $username;
